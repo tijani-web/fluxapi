@@ -20,7 +20,7 @@ import {
 // Import all sections
 import { EndpointSection } from './components/sections/EndpointSection'
 import { MockDataSection } from './components/sections/MockDataSection'
-import { AISection } from './components/sections/AiSection'
+import { AiSection } from './components/sections/AiSection'
 import { WebhooksSection } from './components/sections/WebhooksSection'
 import { EnvironmentsSection } from './components/sections/EnvironmentsSection'
 import { ImportExportSection } from './components/sections/ImportExportSection'
@@ -56,7 +56,7 @@ export default function WorkspacePage() {
   const tabs = [
     { id: 'endpoints', label: 'Endpoints', icon: FileCode, component: EndpointSection, count: counts.endpoints },
     { id: 'mockdata', label: 'Mock Data', icon: Database, component: MockDataSection, count: counts.mockData },
-    { id: 'ai', label: 'AI Assistant', icon: Brain, component: AISection },
+    { id: 'ai', label: 'AI Assistant', icon: Brain, component: AiSection },
     { id: 'webhooks', label: 'Webhooks', icon: WebhookIcon, component: WebhooksSection, count: counts.webhooks },
     { id: 'environments', label: 'Environments', icon: Globe, component: EnvironmentsSection, count: counts.environments },
     { id: 'documentation', label: 'Documentation', icon: BookOpen, component: DocumentationSection },
@@ -234,15 +234,18 @@ export default function WorkspacePage() {
                 )}
                 
                 {/* Tooltip for mobile */}
-                <div className="
-                  absolute bottom-full left-1/2 -translate-x-1/2 mb-2
-                  px-3 py-1.5 bg-popover text-popover-foreground
-                  text-xs font-medium rounded-md shadow-lg border border-border
-                  opacity-0 group-hover:opacity-100 group-focus:opacity-100
-                  transition-opacity duration-200 pointer-events-none
-                  whitespace-nowrap z-50
-                  hidden sm:block
-                ">
+          <div
+              className={`
+                absolute bottom-full left-1/2 -translate-x-1/2 mb-2
+                px-3 py-1.5 bg-popover text-popover-foreground
+                text-xs font-medium rounded-md shadow-lg border border-border
+                opacity-0 group-hover:opacity-100 group-focus:opacity-100
+                transition-opacity duration-200 pointer-events-none
+                whitespace-nowrap z-50
+                hidden sm:block
+              `}
+            >
+
                   {tab.label}
                   <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-popover rotate-45 border-b border-r border-border" />
                 </div>
@@ -274,7 +277,7 @@ export default function WorkspacePage() {
       <div className="flex-1 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
         {activeTab === 'endpoints' && <EndpointSection projectId={projectId} />}
         {activeTab === 'mockdata' && <MockDataSection projectId={projectId} />}
-        {activeTab === 'ai' && <AISection projectId={projectId} />}
+        {activeTab === 'ai' && <AiSection projectId={projectId} />}
         {activeTab === 'webhooks' && <WebhooksSection projectId={projectId} />}
         {activeTab === 'environments' && <EnvironmentsSection projectId={projectId} />}
         {activeTab === 'documentation' && <DocumentationSection projectId={projectId} />}

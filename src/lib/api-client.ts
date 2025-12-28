@@ -474,16 +474,24 @@ static async getProjectExportsHistory(
       throw new Error('Project ID is required');
     }
 
-    // Call the api.ts method
-    return await api.getProjectExportsHistory(projectId, limit);
-  } catch (error: any) {
-    console.error('Failed to fetch project exports:', error);
+    const response = await api.getProjectExportsHistory(projectId, limit);
     
-    if (error.message.includes('403')) {
-      console.log('No permission to view exports');
-      return [];
+    // Handle wrapped response: { success: true, data: [] }
+    if (response && typeof response === 'object' && 'data' in response) {
+      if (response.success && Array.isArray(response.data)) {
+        return response.data;
+      }
     }
     
+    // Handle direct array response
+    if (Array.isArray(response)) {
+      return response;
+    }
+    
+    return [];
+    
+  } catch (error: any) {
+    console.error('Failed to fetch project exports:', error);
     return [];
   }
 }
@@ -638,12 +646,17 @@ static async getEndpoints(projectId: string, params?: PaginationParams): Promise
   try {
     const response = await api.getEndpoints(projectId, params);
     
-    console.log('🔄 ApiClient.getEndpoints raw response:', response);
+    // console.log('🔄 ApiClient.getEndpoints raw response:', response);
     
-    // response = { endpoints: Endpoint[], pagination: {...} }
-    if (response && response.endpoints && Array.isArray(response.endpoints)) {
-      return response.endpoints;
+    // Check for { data: Endpoint[] } pattern (like getProjectExportsHistory)
+    if (response && response.data && Array.isArray(response.data)) {
+      return response.data;
     }
+    
+    // Check for { endpoints: Endpoint[] } pattern (backward compatibility)
+    // if (response && response.endpoints && Array.isArray(response.endpoints)) {
+    //   return response.endpoints;
+    // }
     
     // If response is already an array (fallback)
     if (Array.isArray(response)) {
@@ -653,6 +666,7 @@ static async getEndpoints(projectId: string, params?: PaginationParams): Promise
     return [];
     
   } catch (error) {
+    console.error('Failed to fetch endpoints:', error);
     return [];
   }
 }
@@ -1067,7 +1081,12 @@ static async saveMockDataFromExecution(collectionId: string, data: any[], execut
       executionContext
     });
 
-    return await api.saveMockDataFromExecution(collectionId, data, executionContext);
+    // Convert array to JSON string before sending
+    const dataString = JSON.stringify(data);
+    
+    // Call the api.ts method with the JSON string
+    return await api.saveMockDataFromExecution(collectionId, dataString, executionContext);
+    
   } catch (error: any) {
     console.error('Failed to save mock data from execution:', error);
     

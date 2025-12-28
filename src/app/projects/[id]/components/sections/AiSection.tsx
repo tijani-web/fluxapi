@@ -55,7 +55,7 @@ interface ChatSession {
   tokensUsed: number
 }
 
-export function AISection({ projectId, endpointId }: { projectId: string; endpointId?: string }) {
+export function AiSection({ projectId, endpointId }: { projectId: string; endpointId?: string }) {
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState<AIAction>('generate')
   const [prompt, setPrompt] = useState('')

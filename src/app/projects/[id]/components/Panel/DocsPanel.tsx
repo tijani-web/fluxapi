@@ -19,12 +19,11 @@ import {
 } from 'lucide-react'
 
 interface DocsPanelProps {
-  endpoint: Endpoint
+  endpoint: Endpoint | null
   endpoints: Endpoint[]
 }
 
 export function DocsPanel({ endpoint, endpoints }: DocsPanelProps) {
-  // Add null check at the VERY TOP
   if (!endpoint || typeof endpoint !== 'object') {
     return (
       <div className="flex items-center justify-center min-h-[400px]">

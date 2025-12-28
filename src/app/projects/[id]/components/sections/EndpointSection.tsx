@@ -635,9 +635,9 @@ export function EndpointSection({
   // LOAD ENDPOINTS WITH MOCK DATA & ENVIRONMENTS
   const loadEndpoints = useCallback(async () => {
     try {
-      console.log('📥 Loading endpoints with mock data...')
+      console.log(' Loading endpoints with mock data...')
       const response = await api.getEndpoints(projectId) as PaginatedResponse<Endpoint>
-      const endpointsList = response.data || response.endpoints || []
+      const endpointsList = response.data || []
       
       const sortedEndpoints = [...endpointsList].sort((a, b) => 
         new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
@@ -1687,7 +1687,7 @@ const handleSaveMockData = async () => {
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <div className="overflow-hidden rounded-lg border">
+                          <div className="overflow-hidden rounded-lg border" style={{ height: isMobile ? "250px" : isTablet ? "350px" : "400px" }}>
                             <CodeEditor
                               key={selectedEndpoint.id}
                               code={getCurrentLocalState().code}
@@ -1706,7 +1706,6 @@ const handleSaveMockData = async () => {
                                 } : prev)
                                 saveLocalState(selectedEndpoint.id, { code })
                               }}
-                              height={isMobile ? "250px" : isTablet ? "350px" : "400px"}
                             />
                           </div>
                           

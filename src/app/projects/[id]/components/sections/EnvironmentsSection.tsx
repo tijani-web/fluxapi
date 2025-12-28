@@ -48,6 +48,9 @@ export function EnvironmentsSection({ projectId }: EnvironmentsSectionProps) {
   const [variables, setVariables] = useState<Record<string, any>>({})
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({})
   
+  // alias dynamic JSON editor to any to satisfy TS props usage
+  const JSONEditor: any = JSONInput
+  
   // Load environments
   const loadEnvironments = useCallback(async () => {
     try {
@@ -654,9 +657,8 @@ export function EnvironmentsSection({ projectId }: EnvironmentsSectionProps) {
             <DialogHeader>
               <DialogTitle className="text-lg sm:text-xl">JSON Editor: {selectedEnv.name}</DialogTitle>
             </DialogHeader>
-            <div className="flex-1 overflow-auto min-h-[200px]">
-              <JSONInput
-                id="env-json-editor"
+            <div className="flex-1 overflow-auto min-h-[200px]" id='env-json-editor' >
+              <JSONEditor
                 locale={{
                   format: 'Format',
                   array: 'Array',

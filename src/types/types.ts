@@ -93,12 +93,17 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
+  
+  endpointCount?: number;
+  
   _count?: {
     endpoints: number;
     collaborators: number;
     executionLogs: number;
     webhooks: number;
   };
+  
+  endpoints?: Endpoint[];
 }
 
 export interface ProjectWithDetails extends Project {

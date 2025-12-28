@@ -846,7 +846,6 @@ export function MockDataSection({ projectId }: MockDataSectionProps) {
                                   data={editingData}
                                   onDataChange={setEditingData}
                                   editable={true}
-                                  isMobile={isMobile}
                                 />
                               </div>
                             </div>
@@ -1016,11 +1015,12 @@ export function MockDataSection({ projectId }: MockDataSectionProps) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-6 pt-0">
-                  <SearchBar
-                    onSearch={handleSearch}
-                    placeholder="Search for data across all collections..."
-                    classname="w-full"
-                  />
+                  <div className="w-full">
+                    <SearchBar
+                      onSearch={handleSearch}
+                      placeholder="Search for data across all collections..."
+                    />
+                  </div>
                   
                   {previewData.length > 0 && (
                     <div className="mt-4 sm:mt-6">

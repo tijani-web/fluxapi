@@ -1,11 +1,12 @@
+// app/oauth/success/page.tsx
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 
-export default function OAuthSuccessPage() {
+function OAuthSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { handleOAuthCallback } = useAuth();
@@ -45,5 +46,20 @@ export default function OAuthSuccessPage() {
         <p className="mt-4 text-lg">Completing login...</p>
       </div>
     </div>
+  );
+}
+
+export default function OAuthSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-black text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto" />
+          <p className="mt-4 text-lg">Completing login...</p>
+        </div>
+      </div>
+    }>
+      <OAuthSuccessContent />
+    </Suspense>
   );
 }

@@ -126,8 +126,8 @@ export async function GET(req) {
                   </motion.button>
                   
                   <Badge 
-                    variant="success" 
-                    className="ml-2 font-mono text-xs px-2 py-0.5"
+                    variant="default" 
+                    className="ml-2 font-mono text-xs px-2 py-0.5 text-green-500"
                   >
                     200 OK
                   </Badge>

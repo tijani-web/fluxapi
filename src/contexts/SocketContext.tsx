@@ -31,7 +31,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   
   const socketRef = useRef<Socket | null>(null);
-  const { user, isAuthenticated: isUserAuthenticated, refreshToken } = useAuth();
+  const { user, isAuthenticated: isUserAuthenticated, refresh } = useAuth();
   const toast = useToast();
 
   const connect = useCallback(() => {
@@ -88,7 +88,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       
       if (error.message.includes('auth') || error.message.includes('401')) {
         try {
-          await refreshToken();
+          await refresh();
           setTimeout(() => reconnect(), 1000);
         } catch {
           console.error('Token refresh failed');
@@ -184,7 +184,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socket.emit('pong', { timestamp: Date.now() });
     });
 
-  }, [user, isUserAuthenticated, toast, refreshToken, activeProject]);
+  }, [user, isUserAuthenticated, toast, refresh, activeProject]);
 
   const disconnect = useCallback(() => {
     if (socketRef.current) {
