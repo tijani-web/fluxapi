@@ -24,10 +24,10 @@ import {
   EyeOff,
   Trash2,
   Edit,
-  X  // ADD THIS
+  X  
 } from 'lucide-react'
-import { ApiClient } from '@/lib/api-client'
-import { Endpoint, MockDataCollection, Environment, ProjectCollaborator } from '@/types/types'
+import { api } from '@/lib/api'  // CHANGE: Use api, not ApiClient
+import { Endpoint, MockDataCollection, Environment, ProjectCollaborator, Project } from '@/types/types'
 
 interface SidebarNavProps {
   projectId: string
@@ -40,7 +40,7 @@ interface SidebarNavProps {
   selectedMockId?: string
   selectedEnvironmentId?: string
   onRefresh?: () => void
-  onMobileClose?: () => void  // ADD THIS
+  onMobileClose?: () => void  
 }
 
 export function SidebarNav({ 
@@ -54,13 +54,14 @@ export function SidebarNav({
   selectedMockId,
   selectedEnvironmentId,
   onRefresh,
-  onMobileClose  // ADD THIS
+  onMobileClose  
 }: SidebarNavProps) {
   const router = useRouter()
   const [endpoints, setEndpoints] = useState<Endpoint[]>([])
   const [mockData, setMockData] = useState<MockDataCollection[]>([])
   const [environments, setEnvironments] = useState<Environment[]>([])
   const [collaborators, setCollaborators] = useState<ProjectCollaborator[]>([])
+  const [projectData, setProjectData] = useState<Project | null>(null)  // ADD THIS
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [expandedSections, setExpandedSections] = useState({
@@ -80,6 +81,7 @@ export function SidebarNav({
     setLoading(true)
     try {
       await Promise.all([
+        loadProjectData(),  // ADD THIS
         loadEndpoints(),
         loadMockData(),
         loadEnvironments(),
@@ -92,10 +94,37 @@ export function SidebarNav({
     }
   }
 
+  // ADD THIS FUNCTION - Same as dashboard
+  const loadProjectData = async () => {
+    try {
+      const project = await api.getProject(projectId)  // Use api directly
+      setProjectData(project)
+    } catch (error) {
+      console.error('Failed to load project data:', error)
+      setProjectData(null)
+    }
+  }
+
   const loadEndpoints = async () => {
     try {
-      const data = await ApiClient.getEndpoints(projectId)
-      setEndpoints(Array.isArray(data) ? data : [])
+      const data = await api.getEndpoints(projectId)  // Use api directly
+      console.log('Sidebar endpoints response:', data)
+      
+      // Handle response like dashboard does
+      let endpointsData: Endpoint[] = []
+      
+      if (data && typeof data === 'object') {
+        // Check for endpoints property
+        if ('endpoints' in data && Array.isArray(data.endpoints)) {
+          endpointsData = data.endpoints
+        } 
+        // Check for array directly
+        else if (Array.isArray(data)) {
+          endpointsData = data
+        }
+      }
+      
+      setEndpoints(Array.isArray(endpointsData) ? endpointsData : [])
     } catch (error) {
       console.error('Failed to load endpoints:', error)
       setEndpoints([])
@@ -104,7 +133,7 @@ export function SidebarNav({
 
   const loadMockData = async () => {
     try {
-      const data = await ApiClient.getMockDataCollections(projectId)
+      const data = await api.getMockDataCollections(projectId)  // Use api directly
       setMockData(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to load mock data:', error)
@@ -114,7 +143,7 @@ export function SidebarNav({
 
   const loadEnvironments = async () => {
     try {
-      const data = await ApiClient.getEnvironments(projectId)
+      const data = await api.getEnvironments(projectId)  // Use api directly
       setEnvironments(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to load environments:', error)
@@ -123,20 +152,19 @@ export function SidebarNav({
   }
 
   const loadCollaborators = async () => {
-  try {
-    const data = await ApiClient.getCollaborators(projectId)
-    setCollaborators(Array.isArray(data) ? data : [])
-  } catch (error: any) {
-    // Handle 404 for collaborators route
-    if (error.message.includes('404') || error.message.includes('not found')) {
-      console.log('Collaborators route not available')
-      setCollaborators([])
-    } else {
-      console.error('Failed to load collaborators:', error)
-      setCollaborators([])
+    try {
+      const data = await api.getCollaborators(projectId)  // Use api directly
+      setCollaborators(Array.isArray(data) ? data : [])
+    } catch (error: any) {
+      if (error.message.includes('404') || error.message.includes('not found')) {
+        console.log('Collaborators route not available')
+        setCollaborators([])
+      } else {
+        console.error('Failed to load collaborators:', error)
+        setCollaborators([])
+      }
     }
   }
-}
 
   const handleRefresh = async () => {
     setRefreshing(true)
@@ -155,33 +183,15 @@ export function SidebarNav({
     }))
   }
 
-  const handleExecuteFirstEndpoint = async () => {
-    if (endpoints.length > 0) {
-      try {
-        const endpoint = endpoints[0]
-        await ApiClient.executeEndpoint(projectId, endpoint.id, {
-          body: {},
-          query: {},
-          params: {},
-          headers: {}
-        })
-        // Navigate to test tab or show result
-        router.push(`/projects/${projectId}?tab=test&endpoint=${endpoint.id}`)
-      } catch (error) {
-        console.error('Failed to execute endpoint:', error)
-      }
+  // ADD THIS FUNCTION - Get endpoint count like dashboard
+  const getEndpointCount = () => {
+    if (projectData) {
+      // SAME LOGIC AS DASHBOARD
+      return projectData?._count?.endpoints || 
+             (projectData as any)?.endpointCount || 
+             endpoints.length
     }
-  }
-
-  const handleGenerateDocs = async () => {
-    try {
-      const docs = await ApiClient.generateOpenAPISpec(projectId)
-      // You could download or show the docs
-      console.log('Generated docs:', docs)
-      router.push(`/projects/${projectId}?tab=docs`)
-    } catch (error) {
-      console.error('Failed to generate docs:', error)
-    }
+    return endpoints.length
   }
 
   if (collapsed) {
@@ -211,9 +221,9 @@ export function SidebarNav({
           title="Endpoints"
         >
           <FileCode className="h-4 w-4" />
-          {endpoints.length > 0 && (
+          {getEndpointCount() > 0 && (
             <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center">
-              {endpoints.length}
+              {getEndpointCount()}
             </span>
           )}
         </Button>
@@ -313,7 +323,7 @@ export function SidebarNav({
             </div>
           ) : (
             <>
-              {/* Endpoints Section */}
+              {/* Endpoints Section - UPDATED */}
               <div>
                 <button
                   onClick={() => toggleSection('endpoints')}
@@ -325,7 +335,7 @@ export function SidebarNav({
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="text-xs">
-                      {endpoints.length}
+                      {getEndpointCount()} {/* UPDATED */}
                     </Badge>
                     {expandedSections.endpoints ? (
                       <ChevronDown className="h-4 w-4" />
@@ -368,7 +378,7 @@ export function SidebarNav({
                 )}
               </div>
 
-              {/* Mock Data Section */}
+              {/* Mock Data Section - UNCHANGED */}
               <div>
                 <button
                   onClick={() => toggleSection('mockdata')}
@@ -415,7 +425,7 @@ export function SidebarNav({
                 )}
               </div>
 
-              {/* Environments Section */}
+              {/* Environments Section - UNCHANGED */}
               <div>
                 <button
                   onClick={() => toggleSection('environments')}
@@ -465,7 +475,7 @@ export function SidebarNav({
                 )}
               </div>
 
-              {/* Team Section */}
+              {/* Team Section - UNCHANGED */}
               <div>
                 <button
                   onClick={() => toggleSection('team')}
@@ -513,7 +523,7 @@ export function SidebarNav({
                 )}
               </div>
 
-              {/* Other Navigation Items - WITHOUT NUMBERS */}
+              {/* Other Navigation Items */}
               <div className="pt-2 border-t border-border/40">
                 <div className="space-y-1">
                   <button
