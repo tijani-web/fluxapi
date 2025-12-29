@@ -584,6 +584,8 @@ export function EndpointSection({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [projectData, setProjectData] = useState<any>(null)
+  const [totalEndpoints, setTotalEndpoints] = useState(0)
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedEndpoint, setSelectedEndpoint] = useState<Endpoint | null>(null)
@@ -632,6 +634,23 @@ export function EndpointSection({
     return () => window.removeEventListener('resize', checkScreenSize)
   }, [showMobileMenu])
 
+  const loadProjectData = async () => {
+  try {
+    const project = await api.getProject(projectId)
+    setProjectData(project)
+    
+    // Calculate total endpoints 
+    const endpointCount = project?._count?.endpoints || 
+                         (project as any)?.endpointCount || 
+                         endpoints.length
+    setTotalEndpoints(endpointCount)
+    
+  } catch (error) {
+    console.error('Failed to load project data:', error)
+    setProjectData(null)
+    setTotalEndpoints(endpoints.length)
+  }
+}
   // LOAD ENDPOINTS WITH MOCK DATA & ENVIRONMENTS
   const loadEndpoints = useCallback(async () => {
     try {
@@ -644,6 +663,8 @@ export function EndpointSection({
       )
       
       setEndpoints(sortedEndpoints)
+
+      await loadProjectData()
       
       // Load mock data collections
       try {
@@ -651,7 +672,7 @@ export function EndpointSection({
         setMockDataCollections(mockData)
         if (mockData.length > 0) {
           setSelectedMockData(mockData[0])
-          console.log(`📊 Loaded ${mockData.length} mock data collections`)
+          // console.log(`📊 Loaded ${mockData.length} mock data collections`)
         }
       } catch (error) {
         console.error('Failed to load mock data:', error)
@@ -664,7 +685,7 @@ export function EndpointSection({
         if (envs.length > 0) {
           const defaultEnv = envs.find(e => e.isDefault) || envs[0]
           setSelectedEnvironment(defaultEnv)
-          console.log(`🌍 Loaded ${envs.length} environments`)
+          // console.log(`🌍 Loaded ${envs.length} environments`)
         }
       } catch (error) {
         console.error('Failed to load environments:', error)
@@ -709,6 +730,17 @@ export function EndpointSection({
       setLoading(false)
     }
   }, [projectId, initialEndpointId, toast, onEndpointSelect])
+
+  useEffect(() => {
+  if (!projectData) {
+    setTotalEndpoints(endpoints.length)
+  } else {
+    const endpointCount = projectData?._count?.endpoints || 
+                         (projectData as any)?.endpointCount || 
+                         endpoints.length
+    setTotalEndpoints(endpointCount)
+  }
+}, [endpoints, projectData])
   
   useEffect(() => {
     loadEndpoints()
