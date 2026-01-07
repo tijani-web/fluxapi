@@ -98,7 +98,7 @@ export async function GET(req) {
                 </div>
                 
                 {/* Title */}
-                <span className="text-gray-300 text-sm font-mono ml-2">api/users/route.js</span>
+                <span className="text-gray-300 text-sm font-mono ml-2">api/users</span>
                 
                 {/* Actions */}
                 <div className="ml-auto flex items-center gap-2">
@@ -127,16 +127,78 @@ export async function GET(req) {
                   
                   <Badge 
                     variant="default" 
-                    className="ml-2 font-mono text-xs px-2 py-0.5 text-green-500"
+                    className="ml-2 font-mono text-xs px-2 py-0.5 "
                   >
                     200 OK
                   </Badge>
                 </div>
               </div>
 
-              {/* Code Area */}
-              <div className="p-6 md:p-8 font-mono text-sm md:text-base bg-gradient-to-br from-gray-900/50 to-gray-950/50">
-                <div className="grid md:grid-cols-2 gap-6">
+              {/* Code Area - FIXED: Scrollable container */}
+              <div className="p-4 sm:p-6 md:p-8 font-mono bg-gradient-to-br from-gray-900/50 to-gray-950/50">
+                {/* Mobile/Tablet: Horizontal scroll container */}
+                <div className="md:hidden overflow-x-auto">
+                  <div className="min-w-[700px]">
+                    <div className="grid grid-cols-2 gap-6">
+                      {/* Left: Code Editor */}
+                      <div className="space-y-4">
+                        <div className="text-purple-400 flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-purple-500" />
+                          // Your API endpoint handler
+                        </div>
+                        
+                        <div className="space-y-2 pl-4">
+                          <div className="text-blue-400 text-sm">export async function <span className="text-yellow-300">GET</span>(req) {'{'}</div>
+                          <div className="text-gray-300 ml-4 text-sm">// Fetch mock data from your workspace</div>
+                          <div className="text-gray-300 ml-4 text-sm">const users = await db.users.findMany({'{'}</div>
+                          <div className="text-gray-300 ml-8 text-sm">where: {'{'} active: true {'}'},</div>
+                          <div className="text-gray-300 ml-8 text-sm">take: 10</div>
+                          <div className="text-gray-300 ml-4 text-sm">{'}'});</div>
+                          <div className="text-gray-300 ml-4 text-sm"></div>
+                          <div className="text-gray-300 ml-4 text-sm">return Response.json({'{'}</div>
+                          <div className="text-gray-300 ml-8 text-sm">success: true,</div>
+                          <div className="text-gray-300 ml-8 text-sm">data: users,</div>
+                          <div className="text-gray-300 ml-8 text-sm">timestamp: new Date().toISOString()</div>
+                          <div className="text-gray-300 ml-4 text-sm">{'}'});</div>
+                          <div className="text-blue-400 text-sm">{'}'}</div>
+                        </div>
+                      </div>
+
+                      {/* Right: Response Preview */}
+                      <div className="space-y-4">
+                        <div className="text-green-400 flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-500" />
+                          ✓ Live Response (142ms)
+                        </div>
+                        
+                        <div className="p-4 bg-green-900/10 border border-green-500/20 rounded-lg">
+                          <pre className="text-gray-300 text-sm overflow-x-auto">
+                            <code>{responseExample}</code>
+                          </pre>
+                        </div>
+
+                        {/* Response Stats */}
+                        <div className="grid grid-cols-3 gap-3 pt-4 border-t border-border/50">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-primary">142ms</div>
+                            <div className="text-xs text-muted-foreground">Response Time</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-green-500">2.1KB</div>
+                            <div className="text-xs text-muted-foreground">Size</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-blue-500">200</div>
+                            <div className="text-xs text-muted-foreground">Status</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop: Normal grid (no scroll) */}
+                <div className="hidden md:grid md:grid-cols-2 gap-6">
                   {/* Left: Code Editor */}
                   <div className="space-y-4">
                     <div className="text-purple-400 flex items-center gap-2">
@@ -191,6 +253,14 @@ export async function GET(req) {
                     </div>
                   </div>
                 </div>
+
+                {/* Scroll hint for mobile */}
+                <div className="md:hidden text-center mt-4 pt-4 border-t border-border/50">
+                  <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
+                    <span className="animate-pulse">←→</span>
+                    Scroll horizontally to see both sections
+                  </p>
+                </div>
               </div>
             </Card>
 
@@ -205,7 +275,7 @@ export async function GET(req) {
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="absolute -top-4 -right-4 bg-primary/10 border border-primary/20 rounded-lg p-3"
+              className="absolute -top-4 -right-4 bg-primary/10 border border-primary/20 rounded-lg p-3 hidden md:block"
             >
               <div className="text-xs font-mono text-primary">Live Preview</div>
             </motion.div>
@@ -235,6 +305,35 @@ export async function GET(req) {
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Custom scrollbar styling */}
+      <style jsx global>{`
+        /* For mobile horizontal scroll */
+        @media (max-width: 767px) {
+          #code-preview .overflow-x-auto {
+            scrollbar-width: thin;
+            scrollbar-color: hsl(var(--muted-foreground)/0.3) transparent;
+          }
+          
+          #code-preview .overflow-x-auto::-webkit-scrollbar {
+            height: 6px;
+          }
+          
+          #code-preview .overflow-x-auto::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 3px;
+          }
+          
+          #code-preview .overflow-x-auto::-webkit-scrollbar-thumb {
+            background: hsl(var(--muted-foreground)/0.3);
+            border-radius: 3px;
+          }
+          
+          #code-preview .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+            background: hsl(var(--muted-foreground)/0.5);
+          }
+        }
+      `}</style>
     </section>
   )
 }

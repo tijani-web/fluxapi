@@ -247,7 +247,7 @@ export function HeroSection() {
                   <Clock className="h-6 w-6 text-primary" />
                 </motion.div>
               </div>
-              <div className="text-3xl font-bold text-primary mb-1">0s</div>
+              <div className="text-3xl font-bold text-primary mb-1">60s</div>
               <div className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                 Setup Time
               </div>

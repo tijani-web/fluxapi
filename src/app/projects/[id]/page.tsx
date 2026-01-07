@@ -33,14 +33,9 @@ export default function WorkspacePage() {
   const params = useParams()
   const projectId = params.id as string
   
-  // Get initial active tab from localStorage
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`workspace-tab-${projectId}`)
-      return saved || 'endpoints'
-    }
-    return 'endpoints'
-  })
+  // Fix hydration: Initialize with default, update after mount
+  const [activeTab, setActiveTab] = useState<string>('endpoints')
+  const [hasMounted, setHasMounted] = useState(false)
   
   const [counts, setCounts] = useState({
     endpoints: 0,
@@ -66,21 +61,27 @@ export default function WorkspacePage() {
     { id: 'settings', label: 'Settings', icon: Settings, component: SettingsSection },
   ]
 
+  // Load saved tab from localStorage after mount
+  useEffect(() => {
+    setHasMounted(true)
+    if (projectId && typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`workspace-tab-${projectId}`)
+      if (saved) {
+        setActiveTab(saved)
+      }
+    }
+  }, [projectId])
+
   // Save active tab to localStorage whenever it changes
   useEffect(() => {
-    if (projectId && typeof window !== 'undefined') {
+    if (hasMounted && projectId && typeof window !== 'undefined') {
       localStorage.setItem(`workspace-tab-${projectId}`, activeTab)
     }
-  }, [activeTab, projectId])
+  }, [activeTab, projectId, hasMounted])
 
   // Handle tab change
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId)
-    
-    // Also save immediately for safety
-    if (typeof window !== 'undefined' && projectId) {
-      localStorage.setItem(`workspace-tab-${projectId}`, tabId)
-    }
   }
 
   // Check scroll position
@@ -118,50 +119,28 @@ export default function WorkspacePage() {
   }
 
   useEffect(() => {
-    checkScroll()
-    scrollToActiveTab()
-    window.addEventListener('resize', checkScroll)
+    if (hasMounted) {
+      checkScroll()
+      scrollToActiveTab()
+      window.addEventListener('resize', checkScroll)
+    }
     
     return () => window.removeEventListener('resize', checkScroll)
-  }, [activeTab])
+  }, [activeTab, hasMounted])
 
   useEffect(() => {
-    const currentRef = tabsListRef.current
-    if (currentRef) {
-      currentRef.addEventListener('scroll', checkScroll)
-      return () => currentRef.removeEventListener('scroll', checkScroll)
+    if (hasMounted) {
+      const currentRef = tabsListRef.current
+      if (currentRef) {
+        currentRef.addEventListener('scroll', checkScroll)
+        return () => currentRef.removeEventListener('scroll', checkScroll)
+      }
     }
-  }, [])
+  }, [hasMounted])
 
-  // Get label based on screen size
+  // Get label - SIMPLIFIED: Always return full label to avoid hydration errors
   const getDisplayLabel = (tab: typeof tabs[0]) => {
-    if (typeof window === 'undefined') return tab.label
-    
-    if (window.innerWidth >= 1024) {
-      return tab.label // Full label on desktop
-    } else if (window.innerWidth >= 768) {
-      // Medium screens: show full label for important tabs, short for others
-      const importantTabs = ['endpoints', 'mockdata', 'ai', 'analytics']
-      if (importantTabs.includes(tab.id)) {
-        return tab.label
-      }
-      return tab.label.split(' ')[0] // First word only
-    } else {
-      // Small screens: show abbreviated labels
-      switch(tab.label) {
-        case 'Endpoints': return 'API'
-        case 'Mock Data': return 'Mock'
-        case 'Webhooks': return 'Hook'
-        case 'Environments': return 'Env'
-        case 'Documentation': return 'Docs'
-        case 'Collaborators': return 'Team'
-        case 'Analytics': return 'Stats'
-        case 'AI Assistant': return 'AI'
-        case 'Import/Export': return 'Import'
-        case 'Settings': return 'Settings'
-        default: return tab.label.substring(0, 4)
-      }
-    }
+    return tab.label
   }
 
   return (
@@ -234,18 +213,17 @@ export default function WorkspacePage() {
                 )}
                 
                 {/* Tooltip for mobile */}
-          <div
-              className={`
-                absolute bottom-full left-1/2 -translate-x-1/2 mb-2
-                px-3 py-1.5 bg-popover text-popover-foreground
-                text-xs font-medium rounded-md shadow-lg border border-border
-                opacity-0 group-hover:opacity-100 group-focus:opacity-100
-                transition-opacity duration-200 pointer-events-none
-                whitespace-nowrap z-50
-                hidden sm:block
-              `}
-            >
-
+                <div
+                  className={`
+                    absolute bottom-full left-1/2 -translate-x-1/2 mb-2
+                    px-3 py-1.5 bg-popover text-popover-foreground
+                    text-xs font-medium rounded-md shadow-lg border border-border
+                    opacity-0 group-hover:opacity-100 group-focus:opacity-100
+                    transition-opacity duration-200 pointer-events-none
+                    whitespace-nowrap z-50
+                    hidden sm:block
+                  `}
+                >
                   {tab.label}
                   <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-popover rotate-45 border-b border-r border-border" />
                 </div>

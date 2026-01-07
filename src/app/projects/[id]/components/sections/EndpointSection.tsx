@@ -634,12 +634,25 @@ export function EndpointSection({
     return () => window.removeEventListener('resize', checkScreenSize)
   }, [showMobileMenu])
 
+  // ADD THIS: SYNC TOTAL ENDPOINTS LIKE DASHBOARD
+  useEffect(() => {
+    if (projectData) {
+      // SAME LOGIC AS DASHBOARD AND SIDEBAR
+      const endpointCount = projectData._count?.endpoints || 
+                         (projectData as any)?.endpointCount || 
+                         endpoints.length
+      setTotalEndpoints(endpointCount)
+    } else {
+      setTotalEndpoints(endpoints.length)
+    }
+  }, [endpoints, projectData])
+
   const loadProjectData = async () => {
   try {
     const project = await api.getProject(projectId)
     setProjectData(project)
     
-    // Calculate total endpoints 
+    // Calculate total endpoints - SAME AS DASHBOARD
     const endpointCount = project?._count?.endpoints || 
                          (project as any)?.endpointCount || 
                          endpoints.length
@@ -652,84 +665,114 @@ export function EndpointSection({
   }
 }
   // LOAD ENDPOINTS WITH MOCK DATA & ENVIRONMENTS
-  const loadEndpoints = useCallback(async () => {
-    try {
-      console.log(' Loading endpoints with mock data...')
-      const response = await api.getEndpoints(projectId) as PaginatedResponse<Endpoint>
-      const endpointsList = response.data || []
-      
-      const sortedEndpoints = [...endpointsList].sort((a, b) => 
-        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
-      )
-      
-      setEndpoints(sortedEndpoints)
-
-      await loadProjectData()
-      
-      // Load mock data collections
-      try {
-        const mockData = await api.getMockDataCollections(projectId)
-        setMockDataCollections(mockData)
-        if (mockData.length > 0) {
-          setSelectedMockData(mockData[0])
-          // console.log(`📊 Loaded ${mockData.length} mock data collections`)
-        }
-      } catch (error) {
-        console.error('Failed to load mock data:', error)
+ // LOAD ENDPOINTS WITH MOCK DATA & ENVIRONMENTS - FIXED
+const loadEndpoints = useCallback(async () => {
+  try {
+    console.log(' Loading endpoints with mock data...')
+    const response = await api.getEndpoints(projectId)
+    
+    console.log('API Response:', response)
+    
+    // HANDLE RESPONSE EXACTLY LIKE DASHBOARD DOES
+    let endpointsData: Endpoint[] = []
+    
+    if (response && typeof response === 'object') {
+      // Check for endpoints property
+      if ('endpoints' in response && Array.isArray(response.endpoints)) {
+        endpointsData = response.endpoints
+        console.log('Found endpoints in response.endpoints:', endpointsData.length)
+      } 
+      // Check for data property
+      else if ('data' in response && Array.isArray(response.data)) {
+        endpointsData = response.data
+        console.log('Found endpoints in response.data:', endpointsData.length)
       }
-      
-      // Load environments
-      try {
-        const envs = await api.getEnvironments(projectId)
-        setEnvironments(envs)
-        if (envs.length > 0) {
-          const defaultEnv = envs.find(e => e.isDefault) || envs[0]
-          setSelectedEnvironment(defaultEnv)
-          // console.log(`🌍 Loaded ${envs.length} environments`)
-        }
-      } catch (error) {
-        console.error('Failed to load environments:', error)
+      // Check for paginated response format
+      else if ('items' in response && Array.isArray(response.items)) {
+        endpointsData = response.items
+        console.log('Found endpoints in response.items:', endpointsData.length)
       }
-      
-      // Load saved states
-      const savedStates = localStorage.getItem(`endpoint_states_${projectId}`)
-      if (savedStates) {
-        setEndpointLocalStates(JSON.parse(savedStates))
+      // Check for array directly
+      else if (Array.isArray(response)) {
+        endpointsData = response
+        console.log('Found endpoints as array:', endpointsData.length)
       }
-      
-      // Select endpoint
-      let endpointToSelect = null
-      if (initialEndpointId) {
-        endpointToSelect = endpointsList.find(ep => ep.id === initialEndpointId)
-      }
-      
-      if (!endpointToSelect && sortedEndpoints.length > 0) {
-        endpointToSelect = sortedEndpoints[0]
-      }
-      
-      if (endpointToSelect) {
-        const savedState = savedStates ? JSON.parse(savedStates)[endpointToSelect.id] : null
-        
-        const endpointWithSavedCode = {
-          ...endpointToSelect,
-          code: savedState?.code || endpointToSelect.code
-        }
-        
-        setSelectedEndpoint(endpointWithSavedCode)
-        onEndpointSelect?.(endpointWithSavedCode)
-      }
-      
-    } catch (error: any) {
-      console.error('Failed to load endpoints:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to load endpoints',
-        variant: 'destructive'
-      })
-    } finally {
-      setLoading(false)
     }
-  }, [projectId, initialEndpointId, toast, onEndpointSelect])
+    
+    console.log('Extracted endpoints:', endpointsData)
+    
+    const sortedEndpoints = [...endpointsData].sort((a, b) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    )
+    
+    setEndpoints(sortedEndpoints)
+
+    await loadProjectData()
+    
+    // Load mock data collections
+    try {
+      const mockData = await api.getMockDataCollections(projectId)
+      setMockDataCollections(mockData)
+      if (mockData.length > 0) {
+        setSelectedMockData(mockData[0])
+        console.log(`📊 Loaded ${mockData.length} mock data collections`)
+      }
+    } catch (error) {
+      console.error('Failed to load mock data:', error)
+    }
+    
+    // Load environments
+    try {
+      const envs = await api.getEnvironments(projectId)
+      setEnvironments(envs)
+      if (envs.length > 0) {
+        const defaultEnv = envs.find(e => e.isDefault) || envs[0]
+        setSelectedEnvironment(defaultEnv)
+        console.log(`🌍 Loaded ${envs.length} environments`)
+      }
+    } catch (error) {
+      console.error('Failed to load environments:', error)
+    }
+    
+    // Load saved states
+    const savedStates = localStorage.getItem(`endpoint_states_${projectId}`)
+    if (savedStates) {
+      setEndpointLocalStates(JSON.parse(savedStates))
+    }
+    
+    // Select endpoint
+    let endpointToSelect = null
+    if (initialEndpointId) {
+      endpointToSelect = endpointsData.find(ep => ep.id === initialEndpointId)
+    }
+    
+    if (!endpointToSelect && sortedEndpoints.length > 0) {
+      endpointToSelect = sortedEndpoints[0]
+    }
+    
+    if (endpointToSelect) {
+      const savedState = savedStates ? JSON.parse(savedStates)[endpointToSelect.id] : null
+      
+      const endpointWithSavedCode = {
+        ...endpointToSelect,
+        code: savedState?.code || endpointToSelect.code
+      }
+      
+      setSelectedEndpoint(endpointWithSavedCode)
+      onEndpointSelect?.(endpointWithSavedCode)
+    }
+    
+  } catch (error: any) {
+    console.error('Failed to load endpoints:', error)
+    toast({
+      title: 'Error',
+      description: 'Failed to load endpoints',
+      variant: 'destructive'
+    })
+  } finally {
+    setLoading(false)
+  }
+}, [projectId, initialEndpointId, toast, onEndpointSelect])
 
   useEffect(() => {
   if (!projectData) {
@@ -1170,8 +1213,9 @@ const handleSaveMockData = async () => {
               )}
               <div>
                 <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Endpoints</h2>
+                {/* FIXED: Use totalEndpoints instead of endpoints.length */}
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  {endpoints.length} endpoint{endpoints.length !== 1 ? 's' : ''}
+                  {totalEndpoints} endpoint{totalEndpoints !== 1 ? 's' : ''}
                 </p>
               </div>
             </div>
@@ -1268,8 +1312,15 @@ const handleSaveMockData = async () => {
           </div>
           
           {/* Endpoints Tab */}
-          <TabsContent value="endpoints" className="h-[calc(100%-48px)] p-0 m-0 overflow-hidden">
-            {endpoints.length === 0 ? (
+              <TabsContent value="endpoints" className="h-[calc(100%-48px)] p-0 m-0 overflow-hidden">
+            {loading ? (
+              <div className="h-full flex items-center justify-center">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                  <p className="mt-4 text-muted-foreground">Loading endpoints...</p>
+                </div>
+              </div>
+            ) : totalEndpoints === 0 ? (
               <div className="h-full flex flex-col items-center justify-center p-4 sm:p-8">
                 <div className="text-center max-w-md">
                   <div className="inline-flex p-4 rounded-full bg-primary/10 mb-4">

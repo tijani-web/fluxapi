@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Code2, Github, Twitter, Linkedin, Youtube } from 'lucide-react'
 
 export function Footer() {
-  const currentYear = new Date().getFullYear()
+  const currentYear = 2025
 
   return (
     <footer className="border-t border-border/40 bg-card/50">
@@ -31,7 +31,7 @@ export function Footer() {
             <ul className="space-y-2">
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Features</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Pricing</Link></li>
-              <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">Documentation</Link></li>
+              <li><Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground cursor-pointer">Documentation</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-foreground">API Reference</Link></li>
             </ul>
           </div>
