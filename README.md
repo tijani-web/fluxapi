@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FluxAPI - Web API Builder
 
-## Getting Started
+## Overview
+FluxAPI is an advanced platform for developers to design, build, and test APIs without traditional backend setup. Users can create endpoints, environment, mockdata and  write logic in a sandboxed environment, and generate API documentation automatically.
 
-First, run the development server:
+## Features
+- Create multiple API projects and endpoints
+- Write endpoint logic in Monaco Editor
+- Mock data and environment variables
+- Sandbox execution for testing endpoints
+- Auto-generated API documentation
+- Invitation-based collaboration for team members
+- Webhook integration and live testing
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Tech Stack
+- Frontend: Next.js, React, Tailwind CSS
+- Backend: Node.js, Express
+- Database: PostgreSQL
+- Execution sandbox: Docker container 
+- Deployment: Vercel (frontend), Railway (backend)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Installation
+1. Clone the repository:
+   ```bash
+   git clone <https://github.com/tijani-web/fluxapi>
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. Install dependencies:
+   ```bash
+   npm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+  Create a new project
 
-To learn more about Next.js, take a look at the following resources:
+  Create mockData and environmentVariables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+  Creat endpoints and Use platform default logic or Write customize logic
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+ Test in sandbox environment
 
-## Deploy on Vercel
+ Generate documentation automatically
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+ Contribution
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open to PRs. Follow coding standards and architecture patterns.
+
